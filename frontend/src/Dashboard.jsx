@@ -53,7 +53,7 @@ function Dashboard() {
       <h2>Officer Dashboard</h2>
 
       {alerts.length > 0 && (
-        <div style={{ backgroundColor: '#ffcccc', padding: '10px', marginBottom: '20px' }}>
+        <div className="alert-box">
           <h3>⚠️ Active Alerts</h3>
           {alerts.map(passenger => (
             <div key={passenger.id}>
@@ -65,8 +65,8 @@ function Dashboard() {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '20px' }}>
-        <div>
+      <div className="dashboard-grid">
+        <div className="dashboard-card">
           <h3>Recent Passengers ({passengers.length})</h3>
           <table>
             <thead>
@@ -92,7 +92,7 @@ function Dashboard() {
           </table>
         </div>
 
-        <div>
+        <div className="dashboard-card">
           <h3>Recent Border Activity</h3>
           <table>
             <thead>

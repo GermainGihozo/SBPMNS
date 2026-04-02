@@ -94,7 +94,7 @@ function BorderControl() {
       <h2>Border Control</h2>
 
       {alerts.length > 0 && (
-        <div style={{ backgroundColor: '#ffcccc', padding: '10px', marginBottom: '20px' }}>
+        <div className="alert-box">
           <h3>⚠️ Active Alerts:</h3>
           <ul>
             {alerts.map((alert, index) => (
@@ -104,9 +104,9 @@ function BorderControl() {
         </div>
       )}
 
-      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
+      {error && <div className="error-message">{error}</div>}
 
-      <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ddd' }}>
+      <div className="border-entry-form">
         <h3>Record Border Entry</h3>
         <select 
           value={selectedPassenger} 
@@ -125,9 +125,8 @@ function BorderControl() {
           value={entryNotes}
           onChange={(e) => setEntryNotes(e.target.value)}
           disabled={loading}
-          style={{ marginTop: '10px', width: '100%', minHeight: '60px' }}
         />
-        <button onClick={handleEntry} disabled={loading} style={{ marginTop: '10px' }}>
+        <button onClick={handleEntry} disabled={loading}>
           {loading ? 'Recording...' : 'Record Entry'}
         </button>
       </div>

@@ -189,7 +189,7 @@ function App() {
         <main>
           {isLoggedIn ? null : (
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <Link to="/register">Register New User</Link>
+              <Link to="/register" className="link-button">Register New User</Link>
             </div>
           )}
           <Routes>

@@ -64,7 +64,7 @@ function Register() {
   return (
     <div>
       <h2>Register User</h2>
-      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
+      {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Username:</label>

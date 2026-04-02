@@ -90,7 +90,7 @@ function TicketBooking() {
   return (
     <div>
       <h2>Ticket Booking</h2>
-      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
+      {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Passenger:</label>
