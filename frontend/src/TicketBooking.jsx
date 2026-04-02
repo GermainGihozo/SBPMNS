@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { apiCall, handleApiError } from './api';
 
 function TicketBooking() {
   const [passengers, setPassengers] = useState([]);
   const [trips, setTrips] = useState([]);
   const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     passengerId: '',
     tripId: '',
@@ -17,47 +20,29 @@ function TicketBooking() {
   }, []);
 
   const fetchPassengers = async () => {
-    const token = localStorage.getItem('token');
     try {
-      const response = await fetch('http://localhost:5001/api/sbpmns/passengers', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setPassengers(data);
-      }
-    } catch (error) {
-      console.error('Error fetching passengers:', error);
+      const data = await apiCall('/passengers');
+      setPassengers(data);
+    } catch (err) {
+      console.error('Error fetching passengers:', err);
     }
   };
 
   const fetchTrips = async () => {
-    const token = localStorage.getItem('token');
     try {
-      const response = await fetch('http://localhost:5001/api/sbpmns/trips', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setTrips(data);
-      }
-    } catch (error) {
-      console.error('Error fetching trips:', error);
+      const data = await apiCall('/trips');
+      setTrips(data);
+    } catch (err) {
+      console.error('Error fetching trips:', err);
     }
   };
 
   const fetchTickets = async () => {
-    const token = localStorage.getItem('token');
     try {
-      const response = await fetch('http://localhost:5001/api/sbpmns/tickets', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setTickets(data);
-      }
-    } catch (error) {
-      console.error('Error fetching tickets:', error);
+      const data = await apiCall('/tickets');
+      setTickets(data);
+    } catch (err) {
+      console.error('Error fetching tickets:', err);
     }
   };
 
@@ -66,41 +51,50 @@ function TicketBooking() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setError('');
+  };
+
+  const validateForm = () => {
+    if (!formData.passengerId) {
+      setError('Passenger selection is required');
+      return false;
+    }
+    if (!formData.tripId) {
+      setError('Trip selection is required');
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
+    if (!validateForm()) return;
+
+    setLoading(true);
+    setError('');
     try {
-      const response = await fetch('http://localhost:5001/api/sbpmns/tickets', {
+      await apiCall('/tickets', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
         body: JSON.stringify(formData),
       });
-      if (response.ok) {
-        alert('Ticket booked successfully!');
-        setFormData({ passengerId: '', tripId: '', seatNumber: '' });
-        fetchTickets();
-      } else {
-        const error = await response.json();
-        alert(error.message);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error booking ticket');
+      alert('Ticket booked successfully!');
+      setFormData({ passengerId: '', tripId: '', seatNumber: '' });
+      fetchTickets();
+    } catch (err) {
+      setError(handleApiError(err));
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div>
       <h2>Ticket Booking</h2>
+      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Passenger:</label>
-          <select name="passengerId" value={formData.passengerId} onChange={handleChange} required>
+          <select name="passengerId" value={formData.passengerId} onChange={handleChange} required disabled={loading}>
             <option value="">Select Passenger</option>
             {passengers.map(passenger => (
               <option key={passenger.id} value={passenger.id}>
@@ -111,7 +105,7 @@ function TicketBooking() {
         </div>
         <div>
           <label>Trip:</label>
-          <select name="tripId" value={formData.tripId} onChange={handleChange} required>
+          <select name="tripId" value={formData.tripId} onChange={handleChange} required disabled={loading}>
             <option value="">Select Trip</option>
             {trips.map(trip => (
               <option key={trip.id} value={trip.id}>
@@ -127,38 +121,42 @@ function TicketBooking() {
             name="seatNumber"
             value={formData.seatNumber}
             onChange={handleChange}
+            disabled={loading}
           />
         </div>
-        <button type="submit">Book Ticket</button>
+        <button type="submit" disabled={loading}>{loading ? 'Booking...' : 'Book Ticket'}</button>
       </form>
 
       <h3>Booked Tickets</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Passenger</th>
-            <th>Passport</th>
-            <th>Trip</th>
-            <th>Departure</th>
-            <th>Seat</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tickets.map(ticket => (
-            <tr key={ticket.id}>
-              <td>{ticket.id}</td>
-              <td>{ticket.name}</td>
-              <td>{ticket.passport_number}</td>
-              <td>{ticket.departure} → {ticket.destination}</td>
-              <td>{new Date(ticket.departure_date).toLocaleString()}</td>
-              <td>{ticket.seat_number || 'N/A'}</td>
-              <td>{ticket.status}</td>
+      {tickets.length === 0 && <p>No tickets booked yet.</p>}
+      {tickets.length > 0 && (
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Passenger</th>
+              <th>Passport</th>
+              <th>Trip</th>
+              <th>Departure</th>
+              <th>Seat</th>
+              <th>Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {tickets.map(ticket => (
+              <tr key={ticket.id}>
+                <td>{ticket.id}</td>
+                <td>{ticket.name}</td>
+                <td>{ticket.passport_number}</td>
+                <td>{ticket.departure} → {ticket.destination}</td>
+                <td>{new Date(ticket.departure_date).toLocaleString()}</td>
+                <td>{ticket.seat_number || 'N/A'}</td>
+                <td>{ticket.status || 'Booked'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

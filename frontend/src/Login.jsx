@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from './config';
 
 function Login({ onLogin }) {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -10,12 +13,21 @@ function Login({ onLogin }) {
       ...credentials,
       [e.target.name]: e.target.value,
     });
+    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    
+    if (!credentials.username || !credentials.password) {
+      setError('Username and password are required');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const response = await fetch('http://localhost:5001/api/sbpmns/login', {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,19 +40,24 @@ function Login({ onLogin }) {
         localStorage.setItem('role', data.role);
         onLogin(data.role);
         navigate('/');
-        alert('Login successful!');
+      } else if (response.status === 401) {
+        setError('Invalid username or password');
       } else {
-        alert('Login failed');
+        const errorData = await response.json();
+        setError(errorData.message || 'Login failed');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Login error');
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div>
       <h2>Login</h2>
+      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Username:</label>
@@ -62,7 +79,7 @@ function Login({ onLogin }) {
             required
           />
         </div>
-        <button type="submit">Login</button>
+        <button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
       </form>
     </div>
   );

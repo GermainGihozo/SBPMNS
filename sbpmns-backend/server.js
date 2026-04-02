@@ -8,7 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 // DB
-require("./config/db");
+const db = require("./config/db");
 
 // Routes
 const sbpmnsRoutes = require("./routes/sbpmnsRoutes");
@@ -20,6 +20,19 @@ app.get("/test", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+// Ping DB before starting server
+const startServer = () => {
+  db.query("SELECT 1", (err) => {
+    if (err) {
+      console.error("Cannot start server: Database ping failed.", err);
+      console.error("Make sure MySQL is running and accessible with current DB settings.");
+      process.exit(1);
+    }
+
+    app.listen(PORT, () => {
+      console.log("Server running on port " + PORT);
+    });
+  });
+};
+
+startServer();

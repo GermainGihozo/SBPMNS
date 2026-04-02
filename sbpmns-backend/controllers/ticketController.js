@@ -52,7 +52,9 @@ const bookTicket = (req, res) => {
 
         // Audit log
         const logQuery = 'INSERT INTO audit_logs (user_id, action, details) VALUES (?, ?, ?)';
-        db.query(logQuery, [req.user.id, 'BOOK_TICKET', `Booked ticket for passenger ${passengerId} on trip ${tripId}`]);
+        db.query(logQuery, [req.user.id, 'BOOK_TICKET', `Booked ticket for passenger ${passengerId} on trip ${tripId}`], (logErr) => {
+          if (logErr) console.error('Audit log error:', logErr);
+        });
 
         res.status(201).json({ message: 'Ticket booked successfully', id: result.insertId });
       });

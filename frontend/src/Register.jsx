@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from './config';
 
 function Register() {
   const [userData, setUserData] = useState({ username: '', password: '', role: 'officer' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -10,12 +13,29 @@ function Register() {
       ...userData,
       [e.target.name]: e.target.value,
     });
+    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    
+    if (!userData.username || !userData.password) {
+      setError('Username and password are required');
+      return;
+    }
+    if (userData.username.length < 3) {
+      setError('Username must be at least 3 characters');
+      return;
+    }
+    if (userData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const response = await fetch('http://localhost:5001/api/sbpmns/register', {
+      const response = await fetch(`${API_BASE_URL}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -23,21 +43,28 @@ function Register() {
         body: JSON.stringify(userData),
       });
       if (response.ok) {
-        alert('User registered successfully!');
+        alert('User registered successfully! Redirecting to login...');
         setUserData({ username: '', password: '', role: 'officer' });
         navigate('/login');
+      } else if (response.status === 400) {
+        const errorData = await response.json();
+        setError(errorData.message || 'Registration failed');
       } else {
-        alert('Registration failed');
+        const errorData = await response.json();
+        setError(errorData.message || 'Registration failed');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Registration error');
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div>
       <h2>Register User</h2>
+      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Username:</label>
@@ -67,7 +94,7 @@ function Register() {
             <option value="health">Health Officer</option>
           </select>
         </div>
-        <button type="submit">Register</button>
+        <button type="submit" disabled={loading}>{loading ? 'Registering...' : 'Register'}</button>
       </form>
     </div>
   );

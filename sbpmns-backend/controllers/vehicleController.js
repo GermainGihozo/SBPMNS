@@ -7,18 +7,37 @@ const createVehicle = (req, res) => {
     return res.status(400).json({ message: 'All fields required' });
   }
 
-  const query = 'INSERT INTO vehicles (plate_number, type, capacity) VALUES (?, ?, ?)';
-  db.query(query, [plateNumber, type, capacity], (err, result) => {
+  // Validate capacity is a positive number
+  if (isNaN(capacity) || capacity <= 0) {
+    return res.status(400).json({ message: 'Capacity must be a positive number' });
+  }
+
+  // Check if plate already exists
+  const checkQuery = 'SELECT id FROM vehicles WHERE plate_number = ?';
+  db.query(checkQuery, [plateNumber], (err, results) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Database error' });
     }
+    if (results.length > 0) {
+      return res.status(400).json({ message: 'Vehicle with this plate number already exists' });
+    }
 
-    // Audit log
-    const logQuery = 'INSERT INTO audit_logs (user_id, action, details) VALUES (?, ?, ?)';
-    db.query(logQuery, [req.user.id, 'CREATE_VEHICLE', `Created vehicle ${plateNumber}`]);
+    const query = 'INSERT INTO vehicles (plate_number, type, capacity) VALUES (?, ?, ?)';
+    db.query(query, [plateNumber, type, capacity], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Database error' });
+      }
 
-    res.status(201).json({ message: 'Vehicle created successfully', id: result.insertId });
+      // Audit log
+      const logQuery = 'INSERT INTO audit_logs (user_id, action, details) VALUES (?, ?, ?)';
+      db.query(logQuery, [req.user.id, 'CREATE_VEHICLE', `Created vehicle ${plateNumber}`], (logErr) => {
+        if (logErr) console.error('Audit log error:', logErr);
+      });
+
+      res.status(201).json({ message: 'Vehicle created successfully', id: result.insertId });
+    });
   });
 };
 

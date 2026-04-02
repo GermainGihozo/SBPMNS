@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiCall, handleApiError } from './api';
 
 function BorderControl() {
   const [passengers, setPassengers] = useState([]);
@@ -6,6 +7,8 @@ function BorderControl() {
   const [selectedPassenger, setSelectedPassenger] = useState('');
   const [entryNotes, setEntryNotes] = useState('');
   const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchPassengers();
@@ -13,68 +16,56 @@ function BorderControl() {
   }, []);
 
   const fetchPassengers = async () => {
-    const token = localStorage.getItem('token');
     try {
-      const response = await fetch('http://localhost:5001/api/sbpmns/passengers', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setPassengers(data);
-      }
-    } catch (error) {
-      console.error('Error fetching passengers:', error);
+      const data = await apiCall('/passengers');
+      setPassengers(data);
+    } catch (err) {
+      console.error('Error fetching passengers:', err);
     }
   };
 
   const fetchBorderEntries = async () => {
-    const token = localStorage.getItem('token');
+    setLoading(true);
+    setError('');
     try {
-      const response = await fetch('http://localhost:5001/api/sbpmns/border-entries', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setBorderEntries(data);
-      }
-    } catch (error) {
-      console.error('Error fetching border entries:', error);
+      const data = await apiCall('/border-entries');
+      setBorderEntries(data);
+    } catch (err) {
+      setError(handleApiError(err));
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEntry = async () => {
-    if (!selectedPassenger) return;
+    if (!selectedPassenger) {
+      setError('Please select a passenger');
+      return;
+    }
 
-    const token = localStorage.getItem('token');
+    setLoading(true);
+    setError('');
     try {
-      const response = await fetch('http://localhost:5001/api/sbpmns/border-entries', {
+      const data = await apiCall('/border-entries', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
         body: JSON.stringify({
           passengerId: selectedPassenger,
           notes: entryNotes,
         }),
       });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.alerts) {
-          setAlerts(data.alerts);
-          alert('ALERTS DETECTED:\n' + data.alerts.join('\n'));
-        } else {
-          alert('Border entry recorded successfully');
-        }
-        setSelectedPassenger('');
-        setEntryNotes('');
-        fetchBorderEntries();
+      if (data.alerts && data.alerts.length > 0) {
+        setAlerts(data.alerts);
+        alert('ALERTS DETECTED:\n' + data.alerts.join('\n'));
       } else {
-        alert('Error recording entry');
+        alert('Border entry recorded successfully');
       }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error recording entry');
+      setSelectedPassenger('');
+      setEntryNotes('');
+      fetchBorderEntries();
+    } catch (err) {
+      setError(handleApiError(err));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,25 +73,19 @@ function BorderControl() {
     const notes = prompt('Exit notes:');
     if (notes === null) return;
 
-    const token = localStorage.getItem('token');
+    setLoading(true);
+    setError('');
     try {
-      const response = await fetch(`http://localhost:5001/api/sbpmns/border-entries/${entryId}/exit`, {
+      await apiCall(`/border-entries/${entryId}/exit`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
         body: JSON.stringify({ notes }),
       });
-      if (response.ok) {
-        alert('Border exit recorded successfully');
-        fetchBorderEntries();
-      } else {
-        alert('Error recording exit');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error recording exit');
+      alert('Border exit recorded successfully');
+      fetchBorderEntries();
+    } catch (err) {
+      setError(handleApiError(err));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -110,7 +95,7 @@ function BorderControl() {
 
       {alerts.length > 0 && (
         <div style={{ backgroundColor: '#ffcccc', padding: '10px', marginBottom: '20px' }}>
-          <h3>Active Alerts:</h3>
+          <h3>⚠️ Active Alerts:</h3>
           <ul>
             {alerts.map((alert, index) => (
               <li key={index}>{alert}</li>
@@ -119,9 +104,15 @@ function BorderControl() {
         </div>
       )}
 
-      <div>
+      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
+
+      <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ddd' }}>
         <h3>Record Border Entry</h3>
-        <select value={selectedPassenger} onChange={(e) => setSelectedPassenger(e.target.value)}>
+        <select 
+          value={selectedPassenger} 
+          onChange={(e) => setSelectedPassenger(e.target.value)}
+          disabled={loading}
+        >
           <option value="">Select Passenger</option>
           {passengers.map(passenger => (
             <option key={passenger.id} value={passenger.id}>
@@ -133,43 +124,51 @@ function BorderControl() {
           placeholder="Entry notes"
           value={entryNotes}
           onChange={(e) => setEntryNotes(e.target.value)}
+          disabled={loading}
+          style={{ marginTop: '10px', width: '100%', minHeight: '60px' }}
         />
-        <button onClick={handleEntry}>Record Entry</button>
+        <button onClick={handleEntry} disabled={loading} style={{ marginTop: '10px' }}>
+          {loading ? 'Recording...' : 'Record Entry'}
+        </button>
       </div>
 
       <h3>Border Entries</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Passenger</th>
-            <th>Passport</th>
-            <th>Entry Time</th>
-            <th>Exit Time</th>
-            <th>Status</th>
-            <th>Officer</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {borderEntries.map(entry => (
-            <tr key={entry.id}>
-              <td>{entry.id}</td>
-              <td>{entry.name}</td>
-              <td>{entry.passport_number}</td>
-              <td>{entry.entry_time ? new Date(entry.entry_time).toLocaleString() : 'N/A'}</td>
-              <td>{entry.exit_time ? new Date(entry.exit_time).toLocaleString() : 'N/A'}</td>
-              <td>{entry.status}</td>
-              <td>{entry.officer}</td>
-              <td>
-                {entry.status === 'entered' && (
-                  <button onClick={() => handleExit(entry.id)}>Record Exit</button>
-                )}
-              </td>
+      {loading && <p>Loading border entries...</p>}
+      {borderEntries.length === 0 && !loading && <p>No border entries found.</p>}
+      {borderEntries.length > 0 && (
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Passenger</th>
+              <th>Passport</th>
+              <th>Entry Time</th>
+              <th>Exit Time</th>
+              <th>Status</th>
+              <th>Officer</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {borderEntries.map(entry => (
+              <tr key={entry.id}>
+                <td>{entry.id}</td>
+                <td>{entry.name}</td>
+                <td>{entry.passport_number}</td>
+                <td>{entry.entry_time ? new Date(entry.entry_time).toLocaleString() : 'N/A'}</td>
+                <td>{entry.exit_time ? new Date(entry.exit_time).toLocaleString() : 'N/A'}</td>
+                <td>{entry.status || 'entered'}</td>
+                <td>{entry.officer || 'N/A'}</td>
+                <td>
+                  {entry.status === 'entered' && (
+                    <button onClick={() => handleExit(entry.id)} disabled={loading}>Record Exit</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
