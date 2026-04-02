@@ -1,0 +1,124 @@
+const db = require('../config/db');
+
+// Create tables
+const createTables = () => {
+  const usersTable = `
+    CREATE TABLE IF NOT EXISTS users (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      username VARCHAR(255) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL,
+      role VARCHAR(50) NOT NULL
+    )
+  `;
+
+  const passengersTable = `
+    CREATE TABLE IF NOT EXISTS passengers (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      passport_number VARCHAR(255) UNIQUE NOT NULL,
+      nationality VARCHAR(255) NOT NULL,
+      date_of_birth DATE NOT NULL,
+      biometric_data TEXT,
+      health_status VARCHAR(50) DEFAULT 'healthy',
+      blacklist_reason TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  const vehiclesTable = `
+    CREATE TABLE IF NOT EXISTS vehicles (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      plate_number VARCHAR(50) UNIQUE NOT NULL,
+      type VARCHAR(50) NOT NULL,
+      capacity INT NOT NULL,
+      status VARCHAR(50) DEFAULT 'active'
+    )
+  `;
+
+  const tripsTable = `
+    CREATE TABLE IF NOT EXISTS trips (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      vehicle_id INT,
+      departure VARCHAR(255) NOT NULL,
+      destination VARCHAR(255) NOT NULL,
+      departure_date DATETIME NOT NULL,
+      status VARCHAR(50) DEFAULT 'scheduled',
+      FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+    )
+  `;
+
+  const ticketsTable = `
+    CREATE TABLE IF NOT EXISTS tickets (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      passenger_id INT,
+      trip_id INT,
+      seat_number VARCHAR(10),
+      status VARCHAR(50) DEFAULT 'booked',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (passenger_id) REFERENCES passengers(id),
+      FOREIGN KEY (trip_id) REFERENCES trips(id)
+    )
+  `;
+
+  const borderEntriesTable = `
+    CREATE TABLE IF NOT EXISTS border_entries (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      passenger_id INT,
+      entry_time DATETIME,
+      exit_time DATETIME,
+      status VARCHAR(50) DEFAULT 'entered',
+      officer_id INT,
+      notes TEXT,
+      FOREIGN KEY (passenger_id) REFERENCES passengers(id),
+      FOREIGN KEY (officer_id) REFERENCES users(id)
+    )
+  `;
+
+  const auditLogsTable = `
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT,
+      action VARCHAR(255) NOT NULL,
+      details TEXT,
+      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `;
+
+  const queries = [usersTable, passengersTable, vehiclesTable, tripsTable, ticketsTable, borderEntriesTable, auditLogsTable];
+
+  let completedQueries = 0;
+  const totalQueries = queries.length;
+
+  queries.forEach(query => {
+    db.query(query, (err) => {
+      if (err) {
+        console.error('Error creating table:', err.sql);
+        console.error('Error details:', err);
+      } else {
+        console.log('Table created successfully');
+      }
+      completedQueries++;
+      if (completedQueries === totalQueries) {
+        // All tables created, now insert admin user
+        const bcrypt = require('bcryptjs');
+        bcrypt.hash('admin123', 10, (err, hashedPassword) => {
+          if (err) {
+            console.error('Error hashing password:', err);
+            return;
+          }
+          const insertAdmin = 'INSERT IGNORE INTO users (username, password, role) VALUES (?, ?, ?)';
+          db.query(insertAdmin, ['admin', hashedPassword, 'admin'], (err) => {
+            if (err) {
+              console.error('Error inserting admin user:', err);
+            } else {
+              console.log('Default admin user created');
+            }
+          });
+        });
+      }
+    });
+  });
+};
+
+module.exports = createTables;
