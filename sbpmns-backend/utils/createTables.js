@@ -101,20 +101,37 @@ const createTables = () => {
       }
       completedQueries++;
       if (completedQueries === totalQueries) {
-        // All tables created, now insert admin user
-        const bcrypt = require('bcryptjs');
-        bcrypt.hash('admin123', 10, (err, hashedPassword) => {
+        // Ensure users table has is_active column for role-based management
+        db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active TINYINT(1) DEFAULT 1', (err) => {
           if (err) {
-            console.error('Error hashing password:', err);
-            return;
+            console.error('Error ensuring is_active column:', err);
           }
-          const insertAdmin = 'INSERT IGNORE INTO users (username, password, role) VALUES (?, ?, ?)';
-          db.query(insertAdmin, ['superadmin', hashedPassword, 'superadmin'], (err) => {
-            if (err) {
-              console.error('Error inserting superadmin user:', err);
-            } else {
-              console.log('Default superadmin user created');
-            }
+
+          // All tables created, now insert admin users for tests
+          const bcrypt = require('bcryptjs');
+
+          const seedUsers = [
+            { username: 'superadmin', password: 'admin123', role: 'superadmin' },
+            { username: 'companyadmin', password: 'company123', role: 'companyadmin' },
+            { username: 'borderofficer', password: 'border123', role: 'borderofficer' },
+            { username: 'healthofficer', password: 'health123', role: 'healthofficer' },
+          ];
+
+          seedUsers.forEach(user => {
+            bcrypt.hash(user.password, 10, (err, hashedPassword) => {
+              if (err) {
+                console.error('Error hashing password for', user.username, err);
+                return;
+              }
+              const insertUser = 'INSERT IGNORE INTO users (username, password, role) VALUES (?, ?, ?)';
+              db.query(insertUser, [user.username, hashedPassword, user.role], (err) => {
+                if (err) {
+                  console.error(`Error inserting ${user.username} user:`, err);
+                } else {
+                  console.log(`Default ${user.username} user created or already exists`);
+                }
+              });
+            });
           });
         });
       }

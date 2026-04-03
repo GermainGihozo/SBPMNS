@@ -13,94 +13,141 @@ function Dashboard() {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [newUser, setNewUser] = useState({ username: '', password: '', role: 'companyadmin' });
+  const [createMessage, setCreateMessage] = useState('');
+  const [createError, setCreateError] = useState('');
+
   useEffect(() => {
     const storedRole = localStorage.getItem('role');
     setRole(storedRole);
-    fetchDashboardData(storedRole);
+    fetchDashboardData();
   }, []);
 
-  const fetchDashboardData = async (userRole) => {
+  const fetchDashboardData = async () => {
     const token = localStorage.getItem('token');
     setLoading(true);
 
     try {
-      // Fetch passengers - all roles can see
-      const passResponse = await fetch(`${API_BASE_URL}/passengers`, {
+      const response = await fetch(`${API_BASE_URL}/dashboard`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      if (passResponse.ok) {
-        const data = await passResponse.json();
-        setPassengers(data);
-        const newAlerts = data.filter(p => p.blacklist_reason || p.health_status !== 'healthy');
-        setAlerts(newAlerts);
+
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        throw new Error(errBody.message || 'Failed to load dashboard data');
       }
 
-      // Fetch border entries - officer, health, superadmin can see
-      if (['superadmin', 'borderofficer', 'healthofficer'].includes(userRole)) {
-        const borderResponse = await fetch(`${API_BASE_URL}/border-entries`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (borderResponse.ok) {
-          const data = await borderResponse.json();
-          setBorderEntries(data.slice(0, 10));
-        }
-      }
+      const data = await response.json();
 
-      // Fetch trips - company and super admin
-      if (['superadmin', 'companyadmin'].includes(userRole)) {
-        const tripResponse = await fetch(`${API_BASE_URL}/trips`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (tripResponse.ok) {
-          const data = await tripResponse.json();
-          setTrips(data);
-        }
-      }
-
-      // Fetch vehicles - company and super admin
-      if (['superadmin', 'companyadmin'].includes(userRole)) {
-        const vehicleResponse = await fetch(`${API_BASE_URL}/vehicles`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (vehicleResponse.ok) {
-          const data = await vehicleResponse.json();
-          setVehicles(data);
-        }
-      }
-
-      // Fetch tickets - company and super admin
-      if (['superadmin', 'companyadmin'].includes(userRole)) {
-        const ticketResponse = await fetch(`${API_BASE_URL}/tickets`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (ticketResponse.ok) {
-          const data = await ticketResponse.json();
-          setTickets(data);
-        }
-      }
-
-      // Fetch users - superadmin only
-      if (userRole === 'superadmin') {
-        const userResponse = await fetch(`${API_BASE_URL}/users`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (userResponse.ok) {
-          const data = await userResponse.json();
-          setUsers(data);
-        }
-
-        const auditResponse = await fetch(`${API_BASE_URL}/audit-logs`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (auditResponse.ok) {
-          const data = await auditResponse.json();
-          setAuditLogs(data.slice(0, 10));
-        }
-      }
+      setRole(data.role || localStorage.getItem('role') || '');
+      setPassengers(data.passengers || []);
+      setBorderEntries((data.borderEntries || []).slice(0, 20));
+      setTrips(data.trips || []);
+      setVehicles(data.vehicles || []);
+      setTickets(data.tickets || []);
+      setUsers(data.users || []);
+      setAuditLogs((data.auditLogs || []).slice(0, 20));
+      setAlerts(data.alerts || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const refreshDashboard = () => {
+    fetchDashboardData();
+  };
+
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    setCreateError('');
+    setCreateMessage('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newUser),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || 'Unable to create user');
+      }
+
+      setCreateMessage('User created successfully');
+      setNewUser({ username: '', password: '', role: 'companyadmin' });
+      refreshDashboard();
+    } catch (err) {
+      console.error('User creation error:', err);
+      setCreateError(err.message);
+    }
+  };
+
+  const handleUserRoleChange = async (userId, role) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/role`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role }),
+      });
+      if (!response.ok) {
+        throw new Error((await response.json()).message || 'Cannot update role');
+      }
+      refreshDashboard();
+    } catch (err) {
+      console.error('Role update error:', err);
+      setCreateError(err.message);
+    }
+  };
+
+  const handleToggleActive = async (userId, isActive) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/active`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ is_active: isActive }),
+      });
+      if (!response.ok) {
+        throw new Error((await response.json()).message || 'Cannot update status');
+      }
+      refreshDashboard();
+    } catch (err) {
+      console.error('Status toggle error:', err);
+      setCreateError(err.message);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Delete this user?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error((await response.json()).message || 'Cannot delete user');
+      }
+      refreshDashboard();
+    } catch (err) {
+      console.error('Delete user error:', err);
+      setCreateError(err.message);
     }
   };
 
@@ -166,20 +213,81 @@ function Dashboard() {
             {/* User Management */}
             <div className="dashboard-card">
               <h3>👥 User Management</h3>
+
+              {/* Create new user */}
+              <form onSubmit={handleCreateUser} className="user-form">
+                <div>
+                  <label>Username</label>
+                  <input
+                    type="text"
+                    value={newUser.username}
+                    onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label>Role</label>
+                  <select
+                    value={newUser.role}
+                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                  >
+                    <option value="superadmin">superadmin</option>
+                    <option value="companyadmin">companyadmin</option>
+                    <option value="borderofficer">borderofficer</option>
+                    <option value="healthofficer">healthofficer</option>
+                  </select>
+                </div>
+                <button type="submit">Create User</button>
+                {createMessage && <p className="success-message">{createMessage}</p>}
+                {createError && <p className="error-message">{createError}</p>}
+              </form>
+
               <table>
                 <thead>
                   <tr>
                     <th>Username</th>
                     <th>Role</th>
                     <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.slice(0, 8).map(user => (
+                  {users.map(user => (
                     <tr key={user.id}>
                       <td>{user.username}</td>
-                      <td>{user.role}</td>
-                      <td>{user.is_active ? '✅ Active' : '❌ Inactive'}</td>
+                      <td>
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleUserRoleChange(user.id, e.target.value)}
+                        >
+                          <option value="superadmin">superadmin</option>
+                          <option value="companyadmin">companyadmin</option>
+                          <option value="borderofficer">borderofficer</option>
+                          <option value="healthofficer">healthofficer</option>
+                        </select>
+                      </td>
+                      <td>
+                        <button
+                          className="small-button"
+                          onClick={() => handleToggleActive(user.id, !user.is_active)}
+                        >
+                          {user.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </td>
+                      <td>
+                        <button className="small-button danger" onClick={() => handleDeleteUser(user.id)}>
+                          Delete
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
