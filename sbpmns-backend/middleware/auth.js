@@ -1,5 +1,14 @@
 const jwt = require('jsonwebtoken');
 
+const ROLE = {
+  SUPERADMIN: 'superadmin',
+  COMPANYADMIN: 'companyadmin',
+  BORDEROFFICER: 'borderofficer',
+  HEALTHOFFICER: 'healthofficer',
+};
+
+const validateRole = (role) => Object.values(ROLE).includes(role);
+
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];

@@ -9,6 +9,16 @@ const registerUser = async (req, res) => {
     return res.status(400).json({ message: 'All fields required' });
   }
 
+  const validRoles = ['superadmin', 'companyadmin', 'borderofficer', 'healthofficer'];
+  if (!validRoles.includes(role)) {
+    return res.status(400).json({ message: 'Invalid role' });
+  }
+
+  // Public register only allows non-super roles to prevent elevation abuse.
+  if (role === 'superadmin') {
+    return res.status(403).json({ message: 'Cannot register superadmin over public endpoint' });
+  }
+
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const query = 'INSERT INTO users (username, password, role) VALUES (?, ?, ?)';
@@ -35,13 +45,24 @@ const loginUser = async (req, res) => {
     }
 
     const user = results[0];
+    if (user.is_active === 0) {
+      return res.status(403).json({ message: 'User account is deactivated' });
+    }
+
+    const roleMap = {
+      admin: 'companyadmin',
+      officer: 'borderofficer',
+      health: 'healthofficer',
+    };
+    const userRole = roleMap[user.role] || user.role;
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, role: user.role });
+    const token = jwt.sign({ id: user.id, role: userRole }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.json({ token, role: userRole });
   });
 };
 

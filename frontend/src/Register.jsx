@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from './config';
 
 function Register() {
-  const [userData, setUserData] = useState({ username: '', password: '', role: 'officer' });
+  const [userData, setUserData] = useState({ username: '', password: '', role: 'borderofficer' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -89,9 +89,10 @@ function Register() {
         <div>
           <label>Role:</label>
           <select name="role" value={userData.role} onChange={handleChange}>
-            <option value="admin">Admin</option>
-            <option value="officer">Officer</option>
-            <option value="health">Health Officer</option>
+            <option value="superadmin">SUPER ADMIN</option>
+            <option value="companyadmin">COMPANY ADMIN</option>
+            <option value="borderofficer">BORDER OFFICER</option>
+            <option value="healthofficer">HEALTH OFFICER</option>
           </select>
         </div>
         <button type="submit" disabled={loading}>{loading ? 'Registering...' : 'Register'}</button>

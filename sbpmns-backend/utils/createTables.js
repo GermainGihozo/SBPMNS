@@ -7,7 +7,8 @@ const createTables = () => {
       id INT AUTO_INCREMENT PRIMARY KEY,
       username VARCHAR(255) UNIQUE NOT NULL,
       password VARCHAR(255) NOT NULL,
-      role VARCHAR(50) NOT NULL
+      role ENUM('superadmin','companyadmin','borderofficer','healthofficer','admin','officer','health') NOT NULL,
+      is_active TINYINT(1) DEFAULT 1
     )
   `;
 
@@ -108,11 +109,11 @@ const createTables = () => {
             return;
           }
           const insertAdmin = 'INSERT IGNORE INTO users (username, password, role) VALUES (?, ?, ?)';
-          db.query(insertAdmin, ['admin', hashedPassword, 'admin'], (err) => {
+          db.query(insertAdmin, ['superadmin', hashedPassword, 'superadmin'], (err) => {
             if (err) {
-              console.error('Error inserting admin user:', err);
+              console.error('Error inserting superadmin user:', err);
             } else {
-              console.log('Default admin user created');
+              console.log('Default superadmin user created');
             }
           });
         });

@@ -167,6 +167,11 @@ function App() {
     setRole('');
   };
 
+  const canRegisterPassengers = ['superadmin','companyadmin'].includes(role);
+  const canManageOps = ['superadmin','companyadmin'].includes(role);
+  const canBorderScan = ['superadmin','borderofficer'].includes(role);
+  const canSeeHealth = ['superadmin','healthofficer'].includes(role);
+
   return (
     <Router>
       <div className="App">
@@ -174,12 +179,13 @@ function App() {
           <h1>SBPMNS - Smart Border Passenger Management</h1>
           {isLoggedIn ? (
             <nav>
-              <Link to="/">Registration</Link> | 
-              <Link to="/dashboard">Dashboard</Link> | 
-              <Link to="/vehicles">Vehicles</Link> | 
-              <Link to="/trips">Trips</Link> | 
-              <Link to="/tickets">Tickets</Link> | 
-              <Link to="/border">Border Control</Link>
+              <Link to="/dashboard">Dashboard</Link>
+              {canRegisterPassengers && <><span> | </span><Link to="/">Registration</Link></>}
+              {canManageOps && <><span> | </span><Link to="/vehicles">Vehicles</Link></>}
+              {canManageOps && <><span> | </span><Link to="/trips">Trips</Link></>}
+              {canManageOps && <><span> | </span><Link to="/tickets">Tickets</Link></>}
+              {canBorderScan && <><span> | </span><Link to="/border">Border Control</Link></>}
+              {canSeeHealth && <><span> | </span><Link to="/dashboard?tab=health">Health</Link></>}
               <button onClick={handleLogout} style={{ marginLeft: '10px' }}>Logout</button>
             </nav>
           ) : (
@@ -195,12 +201,21 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/" element={isLoggedIn ? <Registration /> : <Navigate to="/login" />} />
+            <Route
+              path="/"
+              element={
+                isLoggedIn
+                  ? canRegisterPassengers
+                    ? <Registration />
+                    : <div><h3>Access denied: only COMPANY ADMIN / SUPER ADMIN may register passengers.</h3></div>
+                  : <Navigate to="/login" />
+              }
+            />
             <Route path="/dashboard" element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" />} />
-            <Route path="/vehicles" element={isLoggedIn ? <VehicleManagement /> : <Navigate to="/login" />} />
-            <Route path="/trips" element={isLoggedIn ? <TripManagement /> : <Navigate to="/login" />} />
-            <Route path="/tickets" element={isLoggedIn ? <TicketBooking /> : <Navigate to="/login" />} />
-            <Route path="/border" element={isLoggedIn ? <BorderControl /> : <Navigate to="/login" />} />
+            <Route path="/vehicles" element={isLoggedIn && canManageOps ? <VehicleManagement /> : <Navigate to="/" />} />
+            <Route path="/trips" element={isLoggedIn && canManageOps ? <TripManagement /> : <Navigate to="/" />} />
+            <Route path="/tickets" element={isLoggedIn && canManageOps ? <TicketBooking /> : <Navigate to="/" />} />
+            <Route path="/border" element={isLoggedIn && canBorderScan ? <BorderControl /> : <Navigate to="/" />} />
           </Routes>
         </main>
       </div>

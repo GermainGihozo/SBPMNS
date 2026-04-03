@@ -7,6 +7,7 @@ const { createVehicle, getVehicles } = require('../controllers/vehicleController
 const { createTrip, getTrips } = require('../controllers/tripController');
 const { bookTicket, getTickets } = require('../controllers/ticketController');
 const { createBorderEntry, updateBorderExit, getBorderEntries } = require('../controllers/borderEntryController');
+const { getUsers, updateUserRole, toggleUserActive, deleteUser } = require('../controllers/userController');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
 
 // Auth routes
@@ -14,23 +15,23 @@ router.post('/register', registerUser);
 router.post('/login', loginUser);
 
 // Protected routes
-router.post('/passengers', authenticateToken, authorizeRole(['officer', 'admin']), registerPassenger);
-router.get('/passengers', authenticateToken, authorizeRole(['officer', 'admin', 'health']), getPassengers);
+router.post('/passengers', authenticateToken, authorizeRole(['superadmin','companyadmin']), registerPassenger);
+router.get('/passengers', authenticateToken, authorizeRole(['superadmin','companyadmin','borderofficer','healthofficer']), getPassengers);
 
-router.post('/vehicles', authenticateToken, authorizeRole(['admin']), createVehicle);
-router.get('/vehicles', authenticateToken, authorizeRole(['officer', 'admin']), getVehicles);
+router.post('/vehicles', authenticateToken, authorizeRole(['superadmin','companyadmin']), createVehicle);
+router.get('/vehicles', authenticateToken, authorizeRole(['superadmin','companyadmin','borderofficer']), getVehicles);
 
-router.post('/trips', authenticateToken, authorizeRole(['admin']), createTrip);
-router.get('/trips', authenticateToken, authorizeRole(['officer', 'admin']), getTrips);
+router.post('/trips', authenticateToken, authorizeRole(['superadmin','companyadmin']), createTrip);
+router.get('/trips', authenticateToken, authorizeRole(['superadmin','companyadmin','borderofficer']), getTrips);
 
-router.post('/tickets', authenticateToken, authorizeRole(['officer', 'admin']), bookTicket);
-router.get('/tickets', authenticateToken, authorizeRole(['officer', 'admin']), getTickets);
+router.post('/tickets', authenticateToken, authorizeRole(['superadmin','companyadmin']), bookTicket);
+router.get('/tickets', authenticateToken, authorizeRole(['superadmin','companyadmin','borderofficer']), getTickets);
 
-router.post('/border-entries', authenticateToken, authorizeRole(['officer', 'admin']), createBorderEntry);
-router.put('/border-entries/:id/exit', authenticateToken, authorizeRole(['officer', 'admin']), updateBorderExit);
-router.get('/border-entries', authenticateToken, authorizeRole(['officer', 'admin', 'health']), getBorderEntries);
+router.post('/border-entries', authenticateToken, authorizeRole(['superadmin','borderofficer']), createBorderEntry);
+router.put('/border-entries/:id/exit', authenticateToken, authorizeRole(['superadmin','borderofficer']), updateBorderExit);
+router.get('/border-entries', authenticateToken, authorizeRole(['superadmin','borderofficer','healthofficer']), getBorderEntries);
 
-router.get('/audit-logs', authenticateToken, authorizeRole(['admin']), (req, res) => {
+router.get('/audit-logs', authenticateToken, authorizeRole(['superadmin']), (req, res) => {
   const query = 'SELECT al.*, u.username FROM audit_logs al LEFT JOIN users u ON al.user_id = u.id ORDER BY al.timestamp DESC';
   db.query(query, (err, results) => {
     if (err) {
@@ -40,5 +41,11 @@ router.get('/audit-logs', authenticateToken, authorizeRole(['admin']), (req, res
     res.json(results);
   });
 });
+
+// Superadmin user management endpoints
+router.get('/users', authenticateToken, authorizeRole(['superadmin']), getUsers);
+router.put('/users/:id/role', authenticateToken, authorizeRole(['superadmin']), updateUserRole);
+router.put('/users/:id/active', authenticateToken, authorizeRole(['superadmin']), toggleUserActive);
+router.delete('/users/:id', authenticateToken, authorizeRole(['superadmin']), deleteUser);
 
 module.exports = router;
