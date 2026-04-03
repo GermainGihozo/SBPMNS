@@ -96,43 +96,50 @@ const createTables = () => {
       if (err) {
         console.error('Error creating table:', err.sql);
         console.error('Error details:', err);
-      } else {
-        console.log('Table created successfully');
       }
       completedQueries++;
       if (completedQueries === totalQueries) {
-        // Ensure users table has is_active column for role-based management
-        db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active TINYINT(1) DEFAULT 1', (err) => {
+        console.log('All tables verified/created successfully');
+        
+        // Only seed users if the users table is empty
+        db.query('SELECT COUNT(*) as count FROM users', (err, results) => {
           if (err) {
-            console.error('Error ensuring is_active column:', err);
+            console.error('Error checking users table:', err);
+            return;
           }
+          
+          const userCount = results[0].count;
+          
+          if (userCount === 0) {
+            console.log('Users table is empty. Seeding default users...');
+            const bcrypt = require('bcryptjs');
 
-          // All tables created, now insert admin users for tests
-          const bcrypt = require('bcryptjs');
+            const seedUsers = [
+              { username: 'superadmin', password: 'admin123', role: 'superadmin' },
+              { username: 'companyadmin', password: 'company123', role: 'companyadmin' },
+              { username: 'borderofficer', password: 'border123', role: 'borderofficer' },
+              { username: 'healthofficer', password: 'health123', role: 'healthofficer' },
+            ];
 
-          const seedUsers = [
-            { username: 'superadmin', password: 'admin123', role: 'superadmin' },
-            { username: 'companyadmin', password: 'company123', role: 'companyadmin' },
-            { username: 'borderofficer', password: 'border123', role: 'borderofficer' },
-            { username: 'healthofficer', password: 'health123', role: 'healthofficer' },
-          ];
-
-          seedUsers.forEach(user => {
-            bcrypt.hash(user.password, 10, (err, hashedPassword) => {
-              if (err) {
-                console.error('Error hashing password for', user.username, err);
-                return;
-              }
-              const insertUser = 'INSERT IGNORE INTO users (username, password, role) VALUES (?, ?, ?)';
-              db.query(insertUser, [user.username, hashedPassword, user.role], (err) => {
+            seedUsers.forEach(user => {
+              bcrypt.hash(user.password, 10, (err, hashedPassword) => {
                 if (err) {
-                  console.error(`Error inserting ${user.username} user:`, err);
-                } else {
-                  console.log(`Default ${user.username} user created or already exists`);
+                  console.error('Error hashing password for', user.username, err);
+                  return;
                 }
+                const insertUser = 'INSERT INTO users (username, password, role) VALUES (?, ?, ?)';
+                db.query(insertUser, [user.username, hashedPassword, user.role], (err) => {
+                  if (err) {
+                    console.error(`Error inserting ${user.username} user:`, err);
+                  } else {
+                    console.log(`Default ${user.username} user created successfully`);
+                  }
+                });
               });
             });
-          });
+          } else {
+            console.log(`Users table already has ${userCount} user(s). Skipping seed.`);
+          }
         });
       }
     });

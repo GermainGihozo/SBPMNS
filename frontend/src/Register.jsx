@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from './config';
 
 function Register() {
-  const [userData, setUserData] = useState({ username: '', password: '', role: 'borderofficer' });
+  const [userData, setUserData] = useState({ username: '', password: '', role: 'officer' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -62,41 +62,98 @@ function Register() {
   };
 
   return (
-    <div>
-      <h2>Register User</h2>
-      {error && <div className="error-message">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Username:</label>
-          <input
-            type="text"
-            name="username"
-            value={userData.username}
-            onChange={handleChange}
-            required
-          />
+    <div className="auth-container">
+      <div className="auth-background">
+        <div className="auth-shape shape-1"></div>
+        <div className="auth-shape shape-2"></div>
+        <div className="auth-shape shape-3"></div>
+      </div>
+      
+      <div className="auth-card">
+        <div className="auth-header">
+          <div className="auth-logo">
+            <span className="auth-logo-icon">🛂</span>
+          </div>
+          <h2 className="auth-title">Create Account</h2>
+          <p className="auth-subtitle">Join SBPMNS today</p>
         </div>
-        <div>
-          <label>Password:</label>
-          <input
-            type="password"
-            name="password"
-            value={userData.password}
-            onChange={handleChange}
-            required
-          />
+
+        {error && (
+          <div className="auth-error">
+            <span className="error-icon">⚠️</span>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="input-group">
+            <label>Username</label>
+            <div className="input-wrapper">
+              <span className="input-icon">👤</span>
+              <input
+                type="text"
+                name="username"
+                value={userData.username}
+                onChange={handleChange}
+                placeholder="Choose a username"
+                required
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div className="input-group">
+            <label>Password</label>
+            <div className="input-wrapper">
+              <span className="input-icon">🔒</span>
+              <input
+                type="password"
+                name="password"
+                value={userData.password}
+                onChange={handleChange}
+                placeholder="Create a password"
+                required
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div className="input-group">
+            <label>Role</label>
+            <div className="input-wrapper">
+              <span className="input-icon">🎭</span>
+              <select 
+                name="role" 
+                value={userData.role} 
+                onChange={handleChange}
+                disabled={loading}
+              >
+                <option value="admin">Admin</option>
+                <option value="officer">Officer</option>
+                <option value="health">Health Officer</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? (
+              <>
+                <span className="spinner"></span>
+                Creating account...
+              </>
+            ) : (
+              <>
+                <span>Create Account</span>
+                <span className="button-arrow">→</span>
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="auth-footer">
+          <p>Already have an account? <a href="/login" className="auth-link">Sign in</a></p>
         </div>
-        <div>
-          <label>Role:</label>
-          <select name="role" value={userData.role} onChange={handleChange}>
-            <option value="superadmin">SUPER ADMIN</option>
-            <option value="companyadmin">COMPANY ADMIN</option>
-            <option value="borderofficer">BORDER OFFICER</option>
-            <option value="healthofficer">HEALTH OFFICER</option>
-          </select>
-        </div>
-        <button type="submit" disabled={loading}>{loading ? 'Registering...' : 'Register'}</button>
-      </form>
+      </div>
     </div>
   );
 }

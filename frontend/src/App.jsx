@@ -243,11 +243,6 @@ function App() {
         )}
         
         <main className={isLoggedIn ? 'main-with-sidebar' : ''}>
-          {isLoggedIn ? null : (
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <NavLink to="/register" className="link-button">Register New User</NavLink>
-            </div>
-          )}
           <Routes>
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
             <Route path="/register" element={<Register />} />
