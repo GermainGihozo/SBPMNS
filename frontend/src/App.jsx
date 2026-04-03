@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import Login from './Login';
 import Register from './Register';
 import Dashboard from './Dashboard';
@@ -7,6 +7,7 @@ import VehicleManagement from './VehicleManagement';
 import TripManagement from './TripManagement';
 import TicketBooking from './TicketBooking';
 import BorderControl from './BorderControl';
+import UserManagement from './UserManagement';
 import './App.css';
 
 function Registration() {
@@ -163,6 +164,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    localStorage.removeItem('username');
     setIsLoggedIn(false);
     setRole('');
   };
@@ -171,31 +173,79 @@ function App() {
   const canManageOps = ['superadmin','companyadmin'].includes(role);
   const canBorderScan = ['superadmin','borderofficer'].includes(role);
   const canSeeHealth = ['superadmin','healthofficer'].includes(role);
+  const isSuperAdmin = role === 'superadmin';
 
   return (
     <Router>
       <div className="App">
-        <header className="App-header">
+        <header className={`App-header ${isLoggedIn ? 'with-sidebar' : ''}`}>
           <h1>SBPMNS - Smart Border Passenger Management</h1>
-          {isLoggedIn ? (
-            <nav>
-              <Link to="/dashboard">Dashboard</Link>
-              {canRegisterPassengers && <><span> | </span><Link to="/">Registration</Link></>}
-              {canManageOps && <><span> | </span><Link to="/vehicles">Vehicles</Link></>}
-              {canManageOps && <><span> | </span><Link to="/trips">Trips</Link></>}
-              {canManageOps && <><span> | </span><Link to="/tickets">Tickets</Link></>}
-              {canBorderScan && <><span> | </span><Link to="/border">Border Control</Link></>}
-              {canSeeHealth && <><span> | </span><Link to="/dashboard?tab=health">Health</Link></>}
-              <button onClick={handleLogout} style={{ marginLeft: '10px' }}>Logout</button>
-            </nav>
-          ) : (
-            <p>Please login to access the system.</p>
-          )}
+          {!isLoggedIn && <p>Please login to access the system.</p>}
         </header>
-        <main>
+        
+        {isLoggedIn && (
+          <aside className="sidebar">
+            <div className="sidebar-header">
+              <div className="sidebar-logo">
+                <span className="sidebar-logo-icon">🛂</span>
+                <span>SBPMNS</span>
+              </div>
+            </div>
+            <nav className="sidebar-nav">
+              <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                <span className="sidebar-icon">📊</span>
+                <span>Dashboard</span>
+              </NavLink>
+              {canRegisterPassengers && (
+                <NavLink to="/" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'} end>
+                  <span className="sidebar-icon">📝</span>
+                  <span>Registration</span>
+                </NavLink>
+              )}
+              {canManageOps && (
+                <NavLink to="/vehicles" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                  <span className="sidebar-icon">🚌</span>
+                  <span>Vehicles</span>
+                </NavLink>
+              )}
+              {canManageOps && (
+                <NavLink to="/trips" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                  <span className="sidebar-icon">🗺️</span>
+                  <span>Trips</span>
+                </NavLink>
+              )}
+              {canManageOps && (
+                <NavLink to="/tickets" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                  <span className="sidebar-icon">🎫</span>
+                  <span>Tickets</span>
+                </NavLink>
+              )}
+              {canBorderScan && (
+                <NavLink to="/border" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                  <span className="sidebar-icon">🛂</span>
+                  <span>Border Control</span>
+                </NavLink>
+              )}
+              {isSuperAdmin && (
+                <NavLink to="/users" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                  <span className="sidebar-icon">👥</span>
+                  <span>User Management</span>
+                </NavLink>
+              )}
+            </nav>
+            <div className="sidebar-footer">
+              <button onClick={handleLogout} className="logout-btn">
+                <span className="sidebar-icon">🚪</span>
+                <span>Logout</span>
+              </button>
+            </div>
+          </aside>
+        )}
+        
+        <main className={isLoggedIn ? 'main-with-sidebar' : ''}>
           {isLoggedIn ? null : (
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <Link to="/register" className="link-button">Register New User</Link>
+              <NavLink to="/register" className="link-button">Register New User</NavLink>
             </div>
           )}
           <Routes>
@@ -216,6 +266,7 @@ function App() {
             <Route path="/trips" element={isLoggedIn && canManageOps ? <TripManagement /> : <Navigate to="/" />} />
             <Route path="/tickets" element={isLoggedIn && canManageOps ? <TicketBooking /> : <Navigate to="/" />} />
             <Route path="/border" element={isLoggedIn && canBorderScan ? <BorderControl /> : <Navigate to="/" />} />
+            <Route path="/users" element={isLoggedIn && isSuperAdmin ? <UserManagement /> : <Navigate to="/" />} />
           </Routes>
         </main>
       </div>

@@ -38,8 +38,9 @@ function Login({ onLogin }) {
         const data = await response.json();
         localStorage.setItem('token', data.token);
         localStorage.setItem('role', data.role);
+        localStorage.setItem('username', data.username);
         onLogin(data.role);
-        navigate('/');
+        navigate('/dashboard');
       } else if (response.status === 401) {
         setError('Invalid username or password');
       } else {
