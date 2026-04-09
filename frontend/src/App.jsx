@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
+import LandingPage from './LandingPage';
 import Login from './Login';
 import Register from './Register';
 import Dashboard from './Dashboard';
@@ -178,10 +179,11 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <header className={`App-header ${isLoggedIn ? 'with-sidebar' : ''}`}>
-          <h1>SBPMNS - Smart Border Passenger Management</h1>
-          {!isLoggedIn && <p>Please login to access the system.</p>}
-        </header>
+        {isLoggedIn && (
+          <header className="App-header with-sidebar">
+            <h1>SBPMNS - Smart Border Passenger Management</h1>
+          </header>
+        )}
         
         {isLoggedIn && (
           <aside className="sidebar">
@@ -197,7 +199,7 @@ function App() {
                 <span>Dashboard</span>
               </NavLink>
               {canRegisterPassengers && (
-                <NavLink to="/" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'} end>
+                <NavLink to="/registration" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
                   <span className="sidebar-icon">📝</span>
                   <span>Registration</span>
                 </NavLink>
@@ -244,19 +246,20 @@ function App() {
         
         <main className={isLoggedIn ? 'main-with-sidebar' : ''}>
           <Routes>
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/" element={!isLoggedIn ? <LandingPage /> : <Navigate to="/dashboard" />} />
+            <Route path="/login" element={!isLoggedIn ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={isLoggedIn ? <Dashboard /> : <Navigate to="/" />} />
             <Route
-              path="/"
+              path="/registration"
               element={
                 isLoggedIn
                   ? canRegisterPassengers
                     ? <Registration />
                     : <div><h3>Access denied: only COMPANY ADMIN / SUPER ADMIN may register passengers.</h3></div>
-                  : <Navigate to="/login" />
+                  : <Navigate to="/" />
               }
             />
-            <Route path="/dashboard" element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" />} />
             <Route path="/vehicles" element={isLoggedIn && canManageOps ? <VehicleManagement /> : <Navigate to="/" />} />
             <Route path="/trips" element={isLoggedIn && canManageOps ? <TripManagement /> : <Navigate to="/" />} />
             <Route path="/tickets" element={isLoggedIn && canManageOps ? <TicketBooking /> : <Navigate to="/" />} />
