@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import API_BASE_URL from './config';
+import './Dashboard.css';
 
 function Dashboard() {
   const [username, setUsername] = useState('');
@@ -77,27 +78,30 @@ function Dashboard() {
   };
 
   if (loading) {
-    return <div><h2>Loading Dashboard...</h2></div>;
+    return <div className="loading-container"><h2>Loading Dashboard...</h2></div>;
   }
 
   return (
-    <div>
+    <div className="dashboard">
       <div className="welcome-banner">
         <div>
-          <h2>Welcome, {username} - {getRoleDisplay(role)} Dashboard</h2>
+          <h2>Welcome, {username}</h2>
+          <p className="role-badge">{getRoleDisplay(role)}</p>
         </div>
       </div>
 
       {alerts.length > 0 && (
         <div className="alert-box">
           <h3>⚠️ Active Alerts ({alerts.length})</h3>
-          {alerts.slice(0, 3).map(passenger => (
-            <div key={passenger.id}>
-              <strong>{passenger.name}</strong> ({passenger.passport_number})
-              {passenger.blacklist_reason && ` - Blacklisted: ${passenger.blacklist_reason}`}
-              {passenger.health_status !== 'healthy' && ` - Health: ${passenger.health_status}`}
-            </div>
-          ))}
+          <div className="alert-list">
+            {alerts.slice(0, 3).map(passenger => (
+              <div key={passenger.id} className="alert-item">
+                <strong>{passenger.name}</strong> ({passenger.passport_number})
+                {passenger.blacklist_reason && <span className="alert-reason"> - Blacklisted: {passenger.blacklist_reason}</span>}
+                {passenger.health_status !== 'healthy' && <span className="alert-reason"> - Health: {passenger.health_status}</span>}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -138,34 +142,36 @@ function Dashboard() {
       <div className="recent-activity">
         <h3>Recent Border Activity</h3>
         {recentEntries.length === 0 ? (
-          <p style={{ color: '#9ca3af', textAlign: 'center', padding: '2rem' }}>No recent activity</p>
+          <p className="empty-state">No recent activity</p>
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Passenger</th>
-                <th>Passport</th>
-                <th>Entry Time</th>
-                <th>Status</th>
-                <th>Officer</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentEntries.map(entry => (
-                <tr key={entry.id}>
-                  <td>{entry.name}</td>
-                  <td>{entry.passport_number}</td>
-                  <td>{entry.entry_time ? new Date(entry.entry_time).toLocaleString() : 'N/A'}</td>
-                  <td>
-                    <span className={`status-badge status-${entry.status || 'entered'}`}>
-                      {entry.status || 'entered'}
-                    </span>
-                  </td>
-                  <td>{entry.officer || 'N/A'}</td>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Passenger</th>
+                  <th>Passport</th>
+                  <th>Entry Time</th>
+                  <th>Status</th>
+                  <th>Officer</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {recentEntries.map(entry => (
+                  <tr key={entry.id}>
+                    <td>{entry.name}</td>
+                    <td>{entry.passport_number}</td>
+                    <td>{entry.entry_time ? new Date(entry.entry_time).toLocaleString() : 'N/A'}</td>
+                    <td>
+                      <span className={`status-badge status-${entry.status || 'entered'}`}>
+                        {entry.status || 'entered'}
+                      </span>
+                    </td>
+                    <td>{entry.officer || 'N/A'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

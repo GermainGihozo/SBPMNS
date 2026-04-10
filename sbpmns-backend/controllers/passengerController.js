@@ -1,18 +1,19 @@
 const db = require('../config/db');
 
 const registerPassenger = (req, res) => {
-  const { name, passportNumber, nationality, dateOfBirth, biometricData, healthStatus, blacklistReason } = req.body;
+  const { name, passportNumber, nationality, dateOfBirth, bloodType, referenceName, referenceContact, biometricData, healthStatus, blacklistReason } = req.body;
 
   // Validation
   if (!name || !passportNumber || !nationality || !dateOfBirth) {
-    return res.status(400).json({ message: 'All fields are required' });
+    return res.status(400).json({ message: 'Name, passport number, nationality, and date of birth are required' });
   }
   if (name.length < 2) {
     return res.status(400).json({ message: 'Name must be at least 2 characters' });
   }
-  if (!/^[A-Z0-9]{6,}$/.test(passportNumber)) {
-    return res.status(400).json({ message: 'Invalid passport number format' });
+  if (!/^[A-Z0-9]{6,}$/i.test(passportNumber)) {
+    return res.status(400).json({ message: 'Invalid passport number format (minimum 6 alphanumeric characters)' });
   }
+  
   // Check if passport already exists
   const checkQuery = 'SELECT id FROM passengers WHERE passport_number = ?';
   db.query(checkQuery, [passportNumber], (err, results) => {
@@ -24,8 +25,8 @@ const registerPassenger = (req, res) => {
       return res.status(400).json({ message: 'Passenger with this passport already registered' });
     }
 
-    const insertQuery = 'INSERT INTO passengers (name, passport_number, nationality, date_of_birth, biometric_data, health_status, blacklist_reason) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    db.query(insertQuery, [name, passportNumber, nationality, dateOfBirth, biometricData, healthStatus || 'healthy', blacklistReason], (err, result) => {
+    const insertQuery = 'INSERT INTO passengers (name, passport_number, nationality, date_of_birth, blood_type, reference_name, reference_contact, biometric_data, health_status, blacklist_reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    db.query(insertQuery, [name, passportNumber, nationality, dateOfBirth, bloodType, referenceName, referenceContact, biometricData, healthStatus || 'healthy', blacklistReason], (err, result) => {
       if (err) {
         console.error(err);
         return res.status(500).json({ message: 'Database error' });

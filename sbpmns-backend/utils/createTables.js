@@ -19,6 +19,9 @@ const createTables = () => {
       passport_number VARCHAR(255) UNIQUE NOT NULL,
       nationality VARCHAR(255) NOT NULL,
       date_of_birth DATE NOT NULL,
+      blood_type VARCHAR(10),
+      reference_name VARCHAR(255),
+      reference_contact VARCHAR(50),
       biometric_data TEXT,
       health_status VARCHAR(50) DEFAULT 'healthy',
       blacklist_reason TEXT,
@@ -32,6 +35,8 @@ const createTables = () => {
       plate_number VARCHAR(50) UNIQUE NOT NULL,
       type VARCHAR(50) NOT NULL,
       capacity INT NOT NULL,
+      driver_name VARCHAR(255),
+      driver_phone VARCHAR(50),
       status VARCHAR(50) DEFAULT 'active'
     )
   `;

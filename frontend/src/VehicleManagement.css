@@ -1,0 +1,307 @@
+.vehicle-management {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.vehicle-header {
+  margin-bottom: 2rem;
+}
+
+.vehicle-header h2 {
+  color: #fff;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.vehicle-header p {
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.message.success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+}
+
+.message.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.vehicle-form-container {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  margin-bottom: 2rem;
+}
+
+.vehicle-form-container h3 {
+  color: #3b82f6;
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.vehicle-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.required {
+  color: #ef4444;
+  margin-left: 0.25rem;
+}
+
+.form-group input,
+.form-group select {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: #fff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #64748b;
+}
+
+.form-group input:disabled,
+.form-group select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
+  align-self: flex-start;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px rgba(59, 130, 246, 0.3);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.vehicle-list-container {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.vehicle-list-container h3 {
+  color: #fff;
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.loading-text,
+.empty-text {
+  color: #94a3b8;
+  text-align: center;
+  padding: 2rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.vehicle-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vehicle-table thead {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.vehicle-table th {
+  padding: 1rem;
+  text-align: left;
+  color: #3b82f6;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vehicle-table td {
+  padding: 1rem;
+  color: #cbd5e1;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.vehicle-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.vehicle-table tbody tr:hover {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.plate-number {
+  font-weight: 600;
+  color: #fff;
+  font-family: monospace;
+  font-size: 1.05rem;
+}
+
+.vehicle-type {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.vehicle-type.bus {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.vehicle-type.truck {
+  background: rgba(234, 179, 8, 0.2);
+  color: #fbbf24;
+}
+
+.vehicle-type.car {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+}
+
+.vehicle-type.van {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.vehicle-type.minibus {
+  background: rgba(236, 72, 153, 0.2);
+  color: #f472b6;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-badge.active {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.status-badge.inactive {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+}
+
+.status-badge.maintenance {
+  background: rgba(234, 179, 8, 0.2);
+  color: #fbbf24;
+}
+
+.no-data {
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .vehicle-management {
+    padding: 1rem;
+  }
+
+  .vehicle-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .vehicle-form-container,
+  .vehicle-list-container {
+    padding: 1.5rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .submit-btn {
+    width: 100%;
+  }
+
+  .vehicle-table {
+    font-size: 0.85rem;
+  }
+
+  .vehicle-table th,
+  .vehicle-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .table-wrapper {
+    overflow-x: scroll;
+  }
+
+  .vehicle-table {
+    min-width: 800px;
+  }
+}
