@@ -16,20 +16,20 @@ router.post('/login', loginUser);
 
 // Protected routes
 router.post('/passengers', authenticateToken, authorizeRole(['superadmin','companyadmin']), registerPassenger);
-router.get('/passengers', authenticateToken, authorizeRole(['superadmin','companyadmin','borderofficer','healthofficer']), getPassengers);
+router.get('/passengers', authenticateToken, authorizeRole(['superadmin','companyadmin','borderofficer','healthofficer','policeofficer','immigrationofficer']), getPassengers);
 
 router.post('/vehicles', authenticateToken, authorizeRole(['superadmin','companyadmin']), createVehicle);
-router.get('/vehicles', authenticateToken, authorizeRole(['superadmin','companyadmin','borderofficer']), getVehicles);
+router.get('/vehicles', authenticateToken, authorizeRole(['superadmin','companyadmin','borderofficer','policeofficer','immigrationofficer']), getVehicles);
 
 router.post('/trips', authenticateToken, authorizeRole(['superadmin','companyadmin']), createTrip);
-router.get('/trips', authenticateToken, authorizeRole(['superadmin','companyadmin','borderofficer']), getTrips);
+router.get('/trips', authenticateToken, authorizeRole(['superadmin','companyadmin','borderofficer','policeofficer','immigrationofficer']), getTrips);
 
 router.post('/tickets', authenticateToken, authorizeRole(['superadmin','companyadmin']), bookTicket);
-router.get('/tickets', authenticateToken, authorizeRole(['superadmin','companyadmin','borderofficer']), getTickets);
+router.get('/tickets', authenticateToken, authorizeRole(['superadmin','companyadmin','borderofficer','policeofficer','immigrationofficer']), getTickets);
 
-router.post('/border-entries', authenticateToken, authorizeRole(['superadmin','borderofficer']), createBorderEntry);
-router.put('/border-entries/:id/exit', authenticateToken, authorizeRole(['superadmin','borderofficer']), updateBorderExit);
-router.get('/border-entries', authenticateToken, authorizeRole(['superadmin','borderofficer','healthofficer']), getBorderEntries);
+router.post('/border-entries', authenticateToken, authorizeRole(['superadmin','borderofficer','immigrationofficer']), createBorderEntry);
+router.put('/border-entries/:id/exit', authenticateToken, authorizeRole(['superadmin','borderofficer','immigrationofficer']), updateBorderExit);
+router.get('/border-entries', authenticateToken, authorizeRole(['superadmin','borderofficer','healthofficer','policeofficer','immigrationofficer']), getBorderEntries);
 
 router.get('/dashboard', authenticateToken, getDashboardData);
 

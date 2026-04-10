@@ -7,7 +7,7 @@ const createTables = () => {
       id INT AUTO_INCREMENT PRIMARY KEY,
       username VARCHAR(255) UNIQUE NOT NULL,
       password VARCHAR(255) NOT NULL,
-      role ENUM('superadmin','companyadmin','borderofficer','healthofficer','admin','officer','health') NOT NULL,
+      role ENUM('superadmin','companyadmin','borderofficer','healthofficer','policeofficer','immigrationofficer','admin','officer','health') NOT NULL,
       is_active TINYINT(1) DEFAULT 1
     )
   `;
@@ -124,6 +124,8 @@ const createTables = () => {
               { username: 'companyadmin', password: 'company123', role: 'companyadmin' },
               { username: 'borderofficer', password: 'border123', role: 'borderofficer' },
               { username: 'healthofficer', password: 'health123', role: 'healthofficer' },
+              { username: 'policeofficer', password: 'police123', role: 'policeofficer' },
+              { username: 'immigrationofficer', password: 'immigration123', role: 'immigrationofficer' },
             ];
 
             seedUsers.forEach(user => {

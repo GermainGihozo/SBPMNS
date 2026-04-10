@@ -14,7 +14,7 @@ const getUsers = (req, res) => {
 const updateUserRole = (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
-  const validRoles = ['superadmin', 'companyadmin', 'borderofficer', 'healthofficer'];
+  const validRoles = ['superadmin', 'companyadmin', 'borderofficer', 'healthofficer', 'policeofficer', 'immigrationofficer'];
 
   if (!validRoles.includes(role)) {
     return res.status(400).json({ message: 'Invalid role' });
@@ -35,7 +35,7 @@ const updateUserRole = (req, res) => {
 
 const createUser = async (req, res) => {
   const { username, password, role } = req.body;
-  const validRoles = ['superadmin', 'companyadmin', 'borderofficer', 'healthofficer'];
+  const validRoles = ['superadmin', 'companyadmin', 'borderofficer', 'healthofficer', 'policeofficer', 'immigrationofficer'];
 
   if (!username || !password || !role) {
     return res.status(400).json({ message: 'All fields required' });
@@ -123,10 +123,10 @@ const getDashboardData = (req, res) => {
 
   Promise.all([
     query('SELECT * FROM passengers'),
-    ['superadmin', 'borderofficer', 'healthofficer'].includes(role) ? query('SELECT be.*, p.name FROM border_entries be LEFT JOIN passengers p ON be.passenger_id = p.id ORDER BY be.entry_time DESC LIMIT 20') : Promise.resolve([]),
-    ['superadmin', 'companyadmin'].includes(role) ? query('SELECT * FROM trips') : Promise.resolve([]),
-    ['superadmin', 'companyadmin'].includes(role) ? query('SELECT * FROM vehicles') : Promise.resolve([]),
-    ['superadmin', 'companyadmin'].includes(role) ? query('SELECT * FROM tickets') : Promise.resolve([]),
+    ['superadmin', 'borderofficer', 'immigrationofficer', 'healthofficer', 'policeofficer'].includes(role) ? query('SELECT be.*, p.name FROM border_entries be LEFT JOIN passengers p ON be.passenger_id = p.id ORDER BY be.entry_time DESC LIMIT 20') : Promise.resolve([]),
+    ['superadmin', 'companyadmin', 'policeofficer'].includes(role) ? query('SELECT * FROM trips') : Promise.resolve([]),
+    ['superadmin', 'companyadmin', 'policeofficer'].includes(role) ? query('SELECT * FROM vehicles') : Promise.resolve([]),
+    ['superadmin', 'companyadmin', 'policeofficer'].includes(role) ? query('SELECT * FROM tickets') : Promise.resolve([]),
     role === 'superadmin' ? query('SELECT id, username, role, is_active FROM users') : Promise.resolve([]),
     role === 'superadmin' ? query('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 20') : Promise.resolve([]),
   ])

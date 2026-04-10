@@ -20,8 +20,10 @@ A modern, full-stack web application for managing border passenger operations, v
 ### User Roles
 - **Super Admin** - Full system access including user management
 - **Company Admin** - Manage operations, vehicles, trips, and passengers
-- **Border Officer** - Handle border control and passenger verification
-- **Health Officer** - Monitor passenger health status
+- **Border Officer** - Handle border control and passenger verification (fingerprint, ticket verify, vehicle crossing)
+- **Immigration Officer** - Same as Border Officer (border control operations)
+- **Health Officer** - Monitor passenger health status and alerts
+- **Police Officer** - Read-only access to all data (cannot add or modify anything)
 
 ### Modern UI/UX
 - Dark theme with blue accents
@@ -124,7 +126,9 @@ On first run, the following users are created:
 | superadmin | admin123 | Super Admin |
 | companyadmin | company123 | Company Admin |
 | borderofficer | border123 | Border Officer |
+| immigrationofficer | immigration123 | Immigration Officer |
 | healthofficer | health123 | Health Officer |
+| policeofficer | police123 | Police Officer |
 
 **⚠️ Important:** Change these passwords immediately after first login!
 
@@ -196,7 +200,12 @@ sbpmns/
 - Full system access
 - User management (create, edit, delete users)
 - View audit logs
-- All company admin features
+- Passenger registration
+- Vehicle management
+- Trip scheduling
+- Ticket booking
+- Health monitoring
+- Reports generation
 
 ### Company Admin
 - Passenger registration
@@ -204,18 +213,38 @@ sbpmns/
 - Trip scheduling
 - Ticket booking
 - Operations overview
+- Reports generation
 
 ### Border Officer
+- Fingerprint verification
+- Ticket verification
+- Vehicle crossing records
 - Border entry/exit processing
-- Passenger verification
 - Alert monitoring
-- Border activity logs
+- Reports generation
+
+### Immigration Officer
+- Same as Border Officer
+- Fingerprint verification
+- Ticket verification
+- Vehicle crossing records
+- Reports generation
 
 ### Health Officer
-- Health status monitoring
+- Health records (view all passenger health data)
+- Health alerts (real-time notifications)
 - Quarantine management
-- Health alerts
-- Passenger health records
+- Passenger health monitoring
+- Reports generation
+
+### Police Officer
+- Read-only access to all data
+- View passengers (cannot add/edit)
+- View vehicles (cannot add/edit)
+- View trips (cannot add/edit)
+- View tickets (cannot add/edit)
+- Reports generation
+- Cannot create, modify, or delete any data
 
 ## 🌐 API Endpoints
 

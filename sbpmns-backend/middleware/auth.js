@@ -5,6 +5,8 @@ const ROLE = {
   COMPANYADMIN: 'companyadmin',
   BORDEROFFICER: 'borderofficer',
   HEALTHOFFICER: 'healthofficer',
+  POLICEOFFICER: 'policeofficer',
+  IMMIGRATIONOFFICER: 'immigrationofficer',
 };
 
 const validateRole = (role) => Object.values(ROLE).includes(role);

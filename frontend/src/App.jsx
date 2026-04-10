@@ -13,6 +13,9 @@ import TicketVerification from './TicketVerification';
 import VehicleCrossing from './VehicleCrossing';
 import HealthRecords from './HealthRecords';
 import HealthAlerts from './HealthAlerts';
+import ViewOnlyPassengers from './ViewOnlyPassengers';
+import ViewOnlyVehicles from './ViewOnlyVehicles';
+import ViewOnlyTrips from './ViewOnlyTrips';
 import UserManagement from './UserManagement';
 import Reports from './Reports';
 import './App.css';
@@ -43,10 +46,23 @@ function App() {
     setRole('');
   };
 
+  const getRoleDisplay = (role) => {
+    const roleMap = {
+      'superadmin': 'Super Admin',
+      'companyadmin': 'Company Admin',
+      'borderofficer': 'Border Officer',
+      'healthofficer': 'Health Officer',
+      'policeofficer': 'Police Officer',
+      'immigrationofficer': 'Immigration Officer'
+    };
+    return roleMap[role] || role;
+  };
+
   const canRegisterPassengers = ['superadmin','companyadmin'].includes(role);
   const canManageOps = ['superadmin','companyadmin'].includes(role);
-  const canBorderScan = ['superadmin','borderofficer'].includes(role);
+  const canBorderScan = ['borderofficer', 'immigrationofficer'].includes(role);
   const canSeeHealth = ['superadmin','healthofficer'].includes(role);
+  const canViewOnly = ['policeofficer'].includes(role);
   const isSuperAdmin = role === 'superadmin';
 
   return (
@@ -111,6 +127,22 @@ function App() {
                   </NavLink>
                 </>
               )}
+              {canViewOnly && (
+                <>
+                  <NavLink to="/view-passengers" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                    <span className="sidebar-icon">👥</span>
+                    <span>View Passengers</span>
+                  </NavLink>
+                  <NavLink to="/view-vehicles" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                    <span className="sidebar-icon">🚌</span>
+                    <span>View Vehicles</span>
+                  </NavLink>
+                  <NavLink to="/view-trips" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
+                    <span className="sidebar-icon">🗺️</span>
+                    <span>View Trips</span>
+                  </NavLink>
+                </>
+              )}
               {canSeeHealth && (
                 <>
                   <NavLink to="/health-records" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
@@ -167,6 +199,9 @@ function App() {
             <Route path="/vehicle-crossing" element={isLoggedIn && canBorderScan ? <VehicleCrossing /> : <Navigate to="/" />} />
             <Route path="/health-records" element={isLoggedIn && canSeeHealth ? <HealthRecords /> : <Navigate to="/" />} />
             <Route path="/health-alerts" element={isLoggedIn && canSeeHealth ? <HealthAlerts /> : <Navigate to="/" />} />
+            <Route path="/view-passengers" element={isLoggedIn && canViewOnly ? <ViewOnlyPassengers /> : <Navigate to="/" />} />
+            <Route path="/view-vehicles" element={isLoggedIn && canViewOnly ? <ViewOnlyVehicles /> : <Navigate to="/" />} />
+            <Route path="/view-trips" element={isLoggedIn && canViewOnly ? <ViewOnlyTrips /> : <Navigate to="/" />} />
             <Route path="/reports" element={isLoggedIn ? <Reports /> : <Navigate to="/" />} />
             <Route path="/users" element={isLoggedIn && isSuperAdmin ? <UserManagement /> : <Navigate to="/" />} />
           </Routes>

@@ -32,7 +32,9 @@ function Dashboard() {
       'superadmin': 'Super Admin',
       'companyadmin': 'Company Admin',
       'borderofficer': 'Border Officer',
-      'healthofficer': 'Health Officer'
+      'healthofficer': 'Health Officer',
+      'policeofficer': 'Police Officer',
+      'immigrationofficer': 'Immigration Officer'
     };
     return roleMap[role] || role;
   };

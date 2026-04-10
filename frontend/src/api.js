@@ -20,10 +20,11 @@ export const apiCall = async (endpoint, options = {}) => {
       headers,
     });
 
-    // Handle token expiration
-    if (response.status === 403 && token) {
+    // Handle token expiration or unauthorized access
+    if ((response.status === 401 || response.status === 403) && token) {
       localStorage.removeItem('token');
       localStorage.removeItem('role');
+      localStorage.removeItem('username');
       window.location.href = '/login';
       throw new Error('Session expired. Please login again.');
     }

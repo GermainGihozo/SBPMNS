@@ -9,7 +9,7 @@ const registerUser = async (req, res) => {
     return res.status(400).json({ message: 'All fields required' });
   }
 
-  const validRoles = ['superadmin', 'companyadmin', 'borderofficer', 'healthofficer'];
+  const validRoles = ['superadmin', 'companyadmin', 'borderofficer', 'healthofficer', 'policeofficer', 'immigrationofficer'];
   if (!validRoles.includes(role)) {
     return res.status(400).json({ message: 'Invalid role' });
   }
@@ -61,7 +61,7 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user.id, role: userRole }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, role: userRole }, process.env.JWT_SECRET, { expiresIn: '8h' });
     res.json({ token, role: userRole, username: user.username });
   });
 };

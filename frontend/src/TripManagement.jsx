@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiCall, handleApiError } from './api';
+import './TripManagement.css';
 
 function TripManagement() {
   const [trips, setTrips] = useState([]);

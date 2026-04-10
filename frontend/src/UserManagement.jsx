@@ -177,6 +177,8 @@ function UserManagement() {
                 <option value="companyadmin">Company Admin</option>
                 <option value="borderofficer">Border Officer</option>
                 <option value="healthofficer">Health Officer</option>
+                <option value="policeofficer">Police Officer</option>
+                <option value="immigrationofficer">Immigration Officer</option>
               </select>
             </div>
             <button type="submit" disabled={loading}>
@@ -213,6 +215,8 @@ function UserManagement() {
                         <option value="companyadmin">Company Admin</option>
                         <option value="borderofficer">Border Officer</option>
                         <option value="healthofficer">Health Officer</option>
+                        <option value="policeofficer">Police Officer</option>
+                        <option value="immigrationofficer">Immigration Officer</option>
                       </select>
                     </td>
                     <td>
